@@ -1,0 +1,316 @@
+-- medscan.busca_ativa definição
+
+CREATE TABLE `busca_ativa` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.categorianivelacesso definição
+
+CREATE TABLE `categorianivelacesso` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.categoriaunidadesaude definição
+
+CREATE TABLE `categoriaunidadesaude` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.endereco definição
+
+CREATE TABLE `endereco` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `bairro` varchar(50) NOT NULL,
+  `cep` varchar(10) NOT NULL,
+  `cidade` varchar(50) NOT NULL,
+  `complemento` text DEFAULT NULL,
+  `logradouro` varchar(100) NOT NULL,
+  `numero` varchar(10) NOT NULL,
+  `uf` varchar(2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_cep` (`cep`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.funcao definição
+
+CREATE TABLE `funcao` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.tipoagendamento definição
+
+CREATE TABLE `tipoagendamento` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_descricao` (`descricao`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.confignivelacesso definição
+
+CREATE TABLE `confignivelacesso` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(255) NOT NULL,
+  `status` bit(1) NOT NULL,
+  `categoria_nivel_acessoid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_categorianivelacesso` (`categoria_nivel_acessoid`),
+  CONSTRAINT `FK1nuxrwvhf2704xmqyu3nb0f1p` FOREIGN KEY (`categoria_nivel_acessoid`) REFERENCES `categorianivelacesso` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.configunidadesaude definição
+
+CREATE TABLE `configunidadesaude` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(255) NOT NULL,
+  `status` bit(1) NOT NULL,
+  `categoria_unidade_saudeid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_categoriaunidadesaude` (`categoria_unidade_saudeid`),
+  CONSTRAINT `FKs8hiringf7pdbl7vkyu6g79wf` FOREIGN KEY (`categoria_unidade_saudeid`) REFERENCES `categoriaunidadesaude` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.nivelacesso definição
+
+CREATE TABLE `nivelacesso` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(50) NOT NULL,
+  `funcaoid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_descricao` (`descricao`),
+  KEY `FKot18vd89p05h5i2xoytbs7bby` (`funcaoid`),
+  CONSTRAINT `FKot18vd89p05h5i2xoytbs7bby` FOREIGN KEY (`funcaoid`) REFERENCES `funcao` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.tiponivelacesso definição
+
+CREATE TABLE `tiponivelacesso` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `categorianivelacessoid` bigint(20) NOT NULL,
+  `nivelacessoid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKf38untr9dy57ywt808vjwbcwy` (`categorianivelacessoid`),
+  KEY `FKnftn6se0ir658vf7dfqljdq5t` (`nivelacessoid`),
+  CONSTRAINT `FKf38untr9dy57ywt808vjwbcwy` FOREIGN KEY (`categorianivelacessoid`) REFERENCES `categorianivelacesso` (`id`),
+  CONSTRAINT `FKnftn6se0ir658vf7dfqljdq5t` FOREIGN KEY (`nivelacessoid`) REFERENCES `nivelacesso` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.unidadesaude definição
+
+CREATE TABLE `unidadesaude` (
+  `cnes` bigint(20) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `enderecoid` bigint(20) NOT NULL,
+  PRIMARY KEY (`cnes`),
+  UNIQUE KEY `UKrhemkus5m1h214fqiqyncgf1n` (`enderecoid`),
+  KEY `idx_endereco` (`enderecoid`),
+  CONSTRAINT `FKlfpblawl8mrljjoj5cc1im4nf` FOREIGN KEY (`enderecoid`) REFERENCES `endereco` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.usuario definição
+
+CREATE TABLE `usuario` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `email` varchar(100) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  `telefone` varchar(20) DEFAULT NULL,
+  `nivelacessoid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UK5171l57faosmj8myawaucatdw` (`email`),
+  KEY `idx_nome` (`nome`),
+  KEY `idx_nivelacesso` (`nivelacessoid`),
+  CONSTRAINT `FK7x14rmkdj5pf81lq3lev3ct4r` FOREIGN KEY (`nivelacessoid`) REFERENCES `nivelacesso` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.arquivo definição
+
+CREATE TABLE `arquivo` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `caminho_arquivo` varchar(500) NOT NULL,
+  `data_upload` datetime(6) NOT NULL,
+  `descricao` text DEFAULT NULL,
+  `id_entidade` bigint(20) NOT NULL,
+  `mime_type` varchar(100) NOT NULL,
+  `nome_arquivo` varchar(255) NOT NULL,
+  `nome_original` varchar(255) NOT NULL,
+  `tamanho_bytes` bigint(20) NOT NULL,
+  `tipo_arquivo` enum('FOTO_PERFIL','DOCUMENTO_AGENDAMENTO','LAUDO_EXAME','RECEITA_MEDICA','OUTRO') NOT NULL,
+  `tipo_entidade` enum('PACIENTE','AGENDAMENTO','ATENDENTE','USUARIO') NOT NULL,
+  `upload_por_usuario_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKpyulw9ndc2tgu4vkjdlqiutll` (`nome_arquivo`),
+  KEY `idx_tipoEntidade` (`tipo_entidade`),
+  KEY `idx_idEntidade` (`id_entidade`),
+  KEY `idx_dataUpload` (`data_upload`),
+  KEY `FK5yyqqignneaoo1kd7x2abntsd` (`upload_por_usuario_id`),
+  CONSTRAINT `FK5yyqqignneaoo1kd7x2abntsd` FOREIGN KEY (`upload_por_usuario_id`) REFERENCES `usuario` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.atendente definição
+
+CREATE TABLE `atendente` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `foto_perfil_path` varchar(500) DEFAULT NULL,
+  `unidadesaudeid` bigint(20) NOT NULL,
+  `usuarioid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_usuario` (`usuarioid`),
+  KEY `idx_unidadesaude` (`unidadesaudeid`),
+  CONSTRAINT `FKl9xgexufsb5q7m7r08wgmko8f` FOREIGN KEY (`usuarioid`) REFERENCES `usuario` (`id`),
+  CONSTRAINT `FKp70dlw4ogi37goh20vmaqkr74` FOREIGN KEY (`unidadesaudeid`) REFERENCES `unidadesaude` (`cnes`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.auditoria definição
+
+CREATE TABLE `auditoria` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `acao` text NOT NULL,
+  `dia_cadastro` date NOT NULL,
+  `entidade` varchar(100) NOT NULL,
+  `hora_cadastro` time(6) NOT NULL,
+  `identidade` bigint(20) NOT NULL,
+  `usuarioid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_usuario` (`usuarioid`),
+  KEY `idx_diaCadastro` (`dia_cadastro`),
+  KEY `idx_entidade` (`entidade`),
+  CONSTRAINT `FK735ykfnc1tq5rnpp1n3ij2ukt` FOREIGN KEY (`usuarioid`) REFERENCES `usuario` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.paciente definição
+
+CREATE TABLE `paciente` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `cpf` varchar(14) NOT NULL,
+  `datanascimento` date NOT NULL,
+  `foto_perfil_path` varchar(500) DEFAULT NULL,
+  `genero` enum('Masculino','Feminino','Outro') NOT NULL,
+  `enderecoid` bigint(20) NOT NULL,
+  `usuarioid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKfvlo8m5kqpr7knbyw4rjyer2s` (`cpf`),
+  UNIQUE KEY `UKapcwdsnfggc7c89yctttc93og` (`usuarioid`),
+  KEY `idx_usuario` (`usuarioid`),
+  KEY `idx_dataNascimento` (`datanascimento`),
+  KEY `idx_endereco` (`enderecoid`),
+  KEY `idx_genero` (`genero`),
+  CONSTRAINT `FKmp6bbghnb87fusjdw2evxmnwy` FOREIGN KEY (`usuarioid`) REFERENCES `usuario` (`id`),
+  CONSTRAINT `FKslqemkve4owpixnhhpax9ruq5` FOREIGN KEY (`enderecoid`) REFERENCES `endereco` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.tiposervico definição
+
+CREATE TABLE `tiposervico` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `tipoagendamentoid` bigint(20) NOT NULL,
+  `unidadesaudeid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_unidadesaude` (`unidadesaudeid`),
+  KEY `idx_tipoagendamento` (`tipoagendamentoid`),
+  CONSTRAINT `FKchr489rl0bov6eocau4hcf6w5` FOREIGN KEY (`tipoagendamentoid`) REFERENCES `tipoagendamento` (`id`),
+  CONSTRAINT `FKpjjbckpvall3renf9g32kxnyc` FOREIGN KEY (`unidadesaudeid`) REFERENCES `unidadesaude` (`cnes`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.tipounidadesaude definição
+
+CREATE TABLE `tipounidadesaude` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `categoriaunidadesaudeid` bigint(20) NOT NULL,
+  `unidadesaudeid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKox4lerh0mslnd5wksatobwetf` (`categoriaunidadesaudeid`),
+  KEY `FK5k6qjbckofrdrs99rffwp8l5f` (`unidadesaudeid`),
+  CONSTRAINT `FK5k6qjbckofrdrs99rffwp8l5f` FOREIGN KEY (`unidadesaudeid`) REFERENCES `unidadesaude` (`cnes`),
+  CONSTRAINT `FKox4lerh0mslnd5wksatobwetf` FOREIGN KEY (`categoriaunidadesaudeid`) REFERENCES `categoriaunidadesaude` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.agendamento definição
+
+CREATE TABLE `agendamento` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `classificacaorisco` enum('Não Urgente','Pouco Urgente','Urgente','Muito Urgente','Emergência') DEFAULT NULL,
+  `dia_agendamento` date NOT NULL,
+  `dia_cadastro` date NOT NULL,
+  `escalador` int(11) NOT NULL,
+  `hora_agendamento` time(6) NOT NULL,
+  `hora_cadastro` time(6) NOT NULL,
+  `sintomas` text NOT NULL,
+  `status` enum('Pendente','Agendado','Rejeitado') NOT NULL,
+  `atendenteid` bigint(20) NOT NULL,
+  `buscaativaid` bigint(20) NOT NULL,
+  `pacienteid` bigint(20) NOT NULL,
+  `tiposervicoid` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UK9yyslfct9qb6bu0yr4dl1gvdi` (`buscaativaid`),
+  KEY `idx_tipoServico` (`tiposervicoid`),
+  KEY `idx_diaAgendamento` (`dia_agendamento`),
+  KEY `idx_status` (`status`),
+  KEY `idx_pacienteid` (`pacienteid`),
+  KEY `FKjubvjsnt6lvkgq06ult4h4aai` (`atendenteid`),
+  CONSTRAINT `FK330rqjs4xsjcrt7xrdn48gpmo` FOREIGN KEY (`tiposervicoid`) REFERENCES `tiposervico` (`id`),
+  CONSTRAINT `FKjubvjsnt6lvkgq06ult4h4aai` FOREIGN KEY (`atendenteid`) REFERENCES `atendente` (`id`),
+  CONSTRAINT `FKp33x3l0uanc9hb1ni0lol7jxq` FOREIGN KEY (`buscaativaid`) REFERENCES `busca_ativa` (`id`),
+  CONSTRAINT `FKpiwjr4drxr3tngfp2lxau8dc3` FOREIGN KEY (`pacienteid`) REFERENCES `paciente` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.conversa definição
+
+CREATE TABLE `conversa` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `dia_cadastro` date NOT NULL,
+  `hora_cadastro` time(6) NOT NULL,
+  `agendamentoid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_agendamento` (`agendamentoid`),
+  KEY `idx_diaCadastro` (`dia_cadastro`),
+  CONSTRAINT `FKs9usspedoejvtcgrgfjovgxti` FOREIGN KEY (`agendamentoid`) REFERENCES `agendamento` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- medscan.mensagem definição
+
+CREATE TABLE `mensagem` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `conteudo` text NOT NULL,
+  `dia_cadastro` date NOT NULL,
+  `hora_cadastro` time(6) NOT NULL,
+  `lida` bit(1) NOT NULL,
+  `remetentetipo` enum('Paciente','Atendente') NOT NULL,
+  `conversaid` bigint(20) NOT NULL,
+  `usuarioid` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_conversa` (`conversaid`),
+  KEY `idx_usuario` (`usuarioid`),
+  KEY `idx_diaCadastro` (`dia_cadastro`),
+  KEY `idx_remetentetipo` (`remetentetipo`),
+  CONSTRAINT `FK1k0r9qkk2lhlfo1v5u85acgmt` FOREIGN KEY (`usuarioid`) REFERENCES `usuario` (`id`),
+  CONSTRAINT `FKqyd007ux1fxi9qrqrkjly1h4l` FOREIGN KEY (`conversaid`) REFERENCES `conversa` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
