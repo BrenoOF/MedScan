@@ -1,5 +1,4 @@
-/** Todas as requisições à API Spring Boot passam por este módulo. */
-const API_BASE = (import.meta.env.VITE_API_BASE || '/MedScan').replace(/\/$/, '');
+﻿const API_BASE = (import.meta.env.VITE_API_BASE || '/MedScan').replace(/\/$/, '');
 
 export class ApiError extends Error {
   constructor(message, status = 0, details = null) {
@@ -32,7 +31,18 @@ function cookie(name) {
 
 export async function apiRequest(path, { method = 'GET', body, signal } = {}) {
   const safePath = path.startsWith('/') && !path.startsWith('//') ? path : `/${path}`;
-  const token = cookie('XSRF-TOKEN');
+  let token = cookie('XSRF-TOKEN');
+  if (method !== 'GET' && !token) {
+    try {
+      const resposta = await fetch(`${API_BASE}/csrf`, { credentials: 'include' });
+      if (resposta.ok) {
+        const dados = await resposta.json().catch(() => null);
+        token = dados?.token || cookie('XSRF-TOKEN');
+      }
+    } catch {
+      token = cookie('XSRF-TOKEN');
+    }
+  }
   const headers = { Accept: 'application/json' };
   if (method !== 'GET') {
     headers['Content-Type'] = 'application/json';
@@ -75,3 +85,6 @@ export async function apiRequest(path, { method = 'GET', body, signal } = {}) {
 
 export const post = (path, body = {}, options = {}) => apiRequest(path, { method: 'POST', body, ...options });
 export const get = (path, options = {}) => apiRequest(path, { method: 'GET', ...options });
+
+
+

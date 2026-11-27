@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { agendamentosApi } from '../api/agendamentos.js';
 import { listFrom, formatDate, statusLabel } from '../utils/normalize.js';
 import { Alert, EmptyState, Loading, PageHeading, PendingFeature, StatusBadge } from '../components/Feedback.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
-const READY=Boolean(import.meta.env.VITE_AGENDAMENTO_UNIDADE_PATH);
-const CAN_UPDATE=Boolean(import.meta.env.VITE_AGENDAMENTO_STATUS_PATH);
+const READY=true;
+const CAN_UPDATE=true;
 export default function Atendente({ dashboard=false }){
   const {user}=useAuth();
   const [items,setItems]=useState([]);
@@ -27,3 +27,6 @@ export default function Atendente({ dashboard=false }){
    {READY&&!CAN_UPDATE&&<Alert type="warning">O endpoint de alteração de status ainda não foi configurado. Consultas podem funcionar, mas alterações ficam desabilitadas.</Alert>}
   </>;
 }
+
+
+

@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+﻿import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { Alert, Loading } from './Feedback.jsx';
 import { homeForRole } from './Layout.jsx';
@@ -13,8 +13,10 @@ export function RequireAuth({ allowedRoles }) {
 }
 export function GuestOnly({ children }) {
   const { status, role } = useAuth();
-  // Visitantes offline ainda podem abrir a página de login para tentar novamente.
   if (status === 'loading') return <div className="centered-screen"><Loading label="Verificando sua sessão..." /></div>;
   if (status === 'authenticated') return <Navigate to={homeForRole(role)} replace />;
   return children;
 }
+
+
+

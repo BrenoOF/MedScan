@@ -1,11 +1,9 @@
-import React from 'react';
+﻿import React from 'react';
 
-/** Falha inesperada de renderização não deve resultar em tela branca. */
 export default class ErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { failed: false }; }
   static getDerivedStateFromError() { return { failed: true }; }
   componentDidCatch(error) {
-    // Detalhes técnicos podem conter dados sensíveis; não enviar ou exibir em produção.
     if (import.meta.env.DEV) console.error('Erro de renderização MedScan:', error);
   }
   render() {
@@ -13,3 +11,6 @@ export default class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+
+
+

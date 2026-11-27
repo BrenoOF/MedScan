@@ -1,5 +1,4 @@
-/** Adapta apenas variações de apresentação. Não inventa dados que a API não forneceu. */
-export function listFrom(response, keys = []) {
+﻿export function listFrom(response, keys = []) {
   if (Array.isArray(response)) return response;
   for (const key of keys) if (Array.isArray(response?.[key])) return response[key];
   if (Array.isArray(response?.content)) return response.content;
@@ -18,9 +17,8 @@ export function parseRole(usuario) {
   const values = [usuario?.perfil, usuario?.papel, usuario?.role, usuario?.nivelAcesso?.descricao, usuario?.nivelAcesso?.nome, usuario?.nivelAcesso?.funcao?.descricao, usuario?.NivelAcesso?.descricao, usuario?.funcao?.descricao,
     ...(Array.isArray(usuario?.roles) ? usuario.roles : []), ...(Array.isArray(usuario?.authorities) ? usuario.authorities.map(r => typeof r === 'string' ? r : r?.authority) : [])];
   const text = values.filter(Boolean).join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
-  if (/SUPERVISOR|ADMINISTRADOR|\bADMIN\b/.test(text)) return 'supervisor';
+  if (/ADMINISTRADOR|\bADMIN\b/.test(text)) return 'administrador';
   if (/ATENDENTE/.test(text)) return 'atendente';
-  // Falhar fechado: nunca atribuir permissões elevadas a um perfil não reconhecido.
   return 'paciente';
 }
 export function firstName(usuario) { return (usuario?.nome || 'Usuário').trim().split(/\s+/)[0]; }
@@ -30,3 +28,6 @@ export function formatDate(value) {
   const parts = iso.split('-');
   return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : String(value);
 }
+
+
+

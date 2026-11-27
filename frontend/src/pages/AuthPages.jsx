@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { usuariosApi } from '../api/usuarios.js';
@@ -19,9 +19,8 @@ export function Login() {
     e.preventDefault();setError('');setLoading(true);
     try {
       await login(form.email.trim().toLowerCase(),form.senha);
-      // Não confia em perfil derivado de dados digitados. O contexto foi atualizado pelo servidor.
       const state = location.state?.from;
-      navigate(state && !state.startsWith('/supervisor') && !state.startsWith('/atendente') ? state : '/acesso', {replace:true});
+      navigate(state && !state.startsWith('/administrador') && !state.startsWith('/atendente') ? state : '/acesso', {replace:true});
     } catch(err){setError(err.message || 'Não foi possível entrar.');}
     finally{setLoading(false);}
   }
@@ -47,3 +46,6 @@ export function AccessRedirect(){
   const { role, status } = useAuth();
   return status==='authenticated' ? <Navigate to={homeForRole(role)} replace /> : <div className="centered-screen"><p>Verificando sessão...</p></div>;
 }
+
+
+

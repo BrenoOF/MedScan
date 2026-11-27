@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { homeForRole } from '../components/Layout.jsx';
 
@@ -18,3 +18,6 @@ export default function Landing() {
     </main><footer className="public-footer wrap"><img src="/a.png" alt="MedScan" /><span>© 2026 MedScan — Projeto acadêmico de tecnologia em saúde.</span><Link to="/sobre">Sobre o projeto</Link></footer>
   </div>;
 }
+
+
+

@@ -1,0 +1,303 @@
+﻿# **MedScan — Requisitos Específicos do Product Backlog Frontend**
+
+**Objetivo:** transformar os 15 itens do Product Backlog em requisitos técnicos menores, específicos e verificáveis, relacionados a partes concretas da aplicação React.
+
+Nesta etapa, o foco continua sendo **corrigir e estabilizar o frontend existente**, sem implementar antecipadamente funcionalidades que dependem de novos endpoints do backend.
+
+Cada requisito terá um identificador próprio, permitindo organizar o desenvolvimento em tarefas no Trello, Jira, GitHub Projects ou em uma planilha.
+
+## **1. Estrutura do projeto e comunicação com o backend**
+
+Backlogs FE-01, FE-02 e FE-03 | Prioridade P0
+
+### **FE-01 — Definir e organizar a estrutura oficial do frontend**
+
+**Parte da aplicação:** estrutura geral, diretórios, componentes e configuração do React.
+
+| ID      | Requisito específico                                                                              | Critério de aceitação                                                                  |
+| ------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| FE-01.1 | Comparar as duas versões do frontend e escolher aquela que será utilizada como projeto principal. | Existe uma única versão oficial para desenvolvimento.                                  |
+| FE-01.2 | Identificar as páginas, componentes e serviços que podem ser reaproveitados da outra versão.      | Componentes aproveitáveis estão identificados, sem duplicação de implementações.       |
+| FE-01.3 | Revisar a organização das pastas `pages`, `components`, `services` e `assets`.                    | Cada arquivo possui uma responsabilidade clara e está localizado de forma consistente. |
+| FE-01.4 | Verificar dependências e configurações existentes no `package.json`.                              | O projeto instala suas dependências, inicia e executa o build sem erros.               |
+
+**Arquivos envolvidos:** `src/App.jsx`, `package.json`, `src/pages/`, `src/components/`, `src/services/`.
+
+### **FE-02 — Configurar a conexão com a API Spring Boot**
+
+**Parte da aplicação:** configuração HTTP do frontend.
+
+| ID      | Requisito específico                                                                           | Critério de aceitação                                                          |
+| ------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| FE-02.1 | Definir um endereço base único para as chamadas à API, considerando o context path `/MedScan`. | Nenhum componente precisa repetir manualmente a URL completa do backend.       |
+| FE-02.2 | Configurar variáveis de ambiente ou proxy Vite, conforme o ambiente adotado.                   | Requisições chegam ao Spring Boot na porta e caminho corretos.                 |
+| FE-02.3 | Eliminar URLs inconsistentes ou caminhos HTTP fixos espalhados pelas páginas.                  | As chamadas utilizam o serviço HTTP centralizado.                              |
+| FE-02.4 | Verificar a compatibilidade entre origem do frontend, CORS e cookies.                          | O navegador consegue realizar as requisições permitidas sem bloqueios de CORS. |
+
+**Arquivos envolvidos:** `vite.config.js`, `.env` quando aplicável, `src/services/` e configuração correspondente do Spring Boot.
+
+### **FE-03 — Padronizar as requisições HTTP**
+
+**Parte da aplicação:** camada de comunicação com o backend.
+
+| ID      | Requisito específico                                                                             | Critério de aceitação                                                              |
+| ------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| FE-03.1 | Centralizar o tratamento das requisições realizadas com `fetch` ou biblioteca HTTP já utilizada. | As requisições seguem um padrão único.                                             |
+| FE-03.2 | Configurar corretamente `credentials: "include"` para autenticação por sessão.                   | O navegador mantém a sessão autenticada nas operações permitidas.                  |
+| FE-03.3 | Padronizar o envio de JSON e o tratamento dos corpos de resposta.                                | Requests e Responses são processados de acordo com o contrato da API.              |
+| FE-03.4 | Tratar respostas HTTP 200, 204, 400, 401, 403, 404 e 500 de maneira apropriada.                  | A aplicação diferencia sucesso, ausência de conteúdo e diferentes tipos de erro.   |
+| FE-03.5 | Integrar a estratégia CSRF definida pelo backend, sem desabilitar sua proteção.                  | Operações autenticadas que alteram dados funcionam com a proteção CSRF habilitada. |
+
+**Arquivos envolvidos:** `usuarioService.js`, `healthService.js` e demais serviços HTTP.
+
+## **2. Autenticação, cadastro e navegação**
+
+Backlogs FE-04, FE-05, FE-06, FE-07 e FE-08 | Prioridades P0 e P1
+
+### **FE-04 — Corrigir a integração dos usuários**
+
+**Parte da aplicação:** Login, Cadastro e Gerenciamento de Usuários.
+
+| ID      | Requisito específico                                                                                                            | Critério de aceitação                                                                |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| FE-04.1 | Corrigir o login para utilizar `POST /usuario/usuarioLogin`.                                                                    | O formulário envia `email` e `senha` e interpreta a resposta real.                   |
+| FE-04.2 | Corrigir o cadastro público para utilizar `POST /usuario/usuarioCadastro`, em vez da rota administrativa `/usuario/usuarioNew`. | O cadastro usa o contrato público existente e não exige privilégios administrativos. |
+| FE-04.3 | Ajustar a listagem de usuários para enviar filtros aceitos por `POST /usuario/usuarioList`.                                     | Não ocorre erro 400 causado por parâmetros incorretos.                               |
+| FE-04.4 | Identificar chamadas de edição que apontam para `/usuario/usuarioEdit`, ainda inexistente no backend.                           | Nenhuma tela tenta executar edição real por um endpoint inexistente.                 |
+| FE-04.5 | Diferenciar operações permitidas ao próprio usuário das operações administrativas.                                              | O frontend apresenta ações coerentes com as permissões do usuário.                   |
+
+**Arquivos envolvidos:** `Login.jsx`, `Cadastro.jsx`, telas de usuários e `usuarioService.js`.
+
+**Dependência:** estabilização dos endpoints e das permissões no backend.
+
+### **FE-05 — Remover confirmações simuladas**
+
+**Parte da aplicação:** operações de cadastro, login, edição e agendamento.
+
+| ID      | Requisito específico                                                                             | Critério de aceitação                                                                  |
+| ------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| FE-05.1 | Remover o sucesso simulado do login quando o backend não responde.                               | Falhas de comunicação não autenticam o usuário.                                        |
+| FE-05.2 | Remover confirmações simuladas do cadastro.                                                      | A mensagem de cadastro realizado aparece somente após confirmação da API.              |
+| FE-05.3 | Identificar operações que apenas salvam dados em `localStorage`, sem persistência no MariaDB.    | Operações simuladas não são apresentadas como alterações reais do sistema.             |
+| FE-05.4 | Corrigir a confirmação do agendamento, que atualmente não possui integração com uma API própria. | A interface não informa que um agendamento foi registrado sem persistência confirmada. |
+
+**Arquivos envolvidos:** `Login.jsx`, `Cadastro.jsx`, `Agendamento.jsx`, páginas administrativas.
+
+### **FE-06 — Corrigir rotas e navegação**
+
+**Parte da aplicação:** React Router, menus e redirecionamentos.
+
+| ID      | Requisito específico                                                                                               | Critério de aceitação                                                         |
+| ------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| FE-06.1 | Revisar todas as rotas registradas no `App.jsx`.                                                                   | Cada página disponibilizada possui uma rota válida.                           |
+| FE-06.2 | Corrigir redirecionamentos após login e logout.                                                                    | O usuário é encaminhado para uma página existente e adequada ao seu estado.   |
+| FE-06.3 | Corrigir referências a rotas inexistentes, como `/home`, `/welcome`, `/ubs` e `/admin`, conforme a versão oficial. | Nenhum botão ou link funcional direciona a uma rota não registrada.           |
+| FE-06.4 | Criar um comportamento consistente para URLs não encontradas.                                                      | Rotas inválidas apresentam uma página de erro ou redirecionamento apropriado. |
+
+**Arquivos envolvidos:** `App.jsx`, `Login.jsx`, `TopBar.jsx`, menus e componentes de navegação.
+
+### **FE-07 — Gerenciar a sessão do usuário**
+
+**Parte da aplicação:** autenticação, cabeçalho, login e logout.
+
+| ID      | Requisito específico                                                              | Critério de aceitação                                                              |
+| ------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| FE-07.1 | Recuperar a sessão do usuário pela API `/usuario/usuarioSession`.                 | Após atualizar a página, a aplicação reconhece uma sessão válida.                  |
+| FE-07.2 | Manter o estado de autenticação disponível para os componentes que precisam dele. | Menus e páginas identificam corretamente o estado do usuário.                      |
+| FE-07.3 | Implementar o logout utilizando `/usuario/usuarioLogout`.                         | A sessão é encerrada no servidor e o estado local é limpo.                         |
+| FE-07.4 | Tratar expiração ou invalidação de sessão.                                        | Requisições que retornam 401 não deixam a interface aparentando estar autenticada. |
+
+**Arquivos envolvidos:** serviço de autenticação, `Login.jsx`, `TopBar.jsx`, `App.jsx`.
+
+**Dependência:** BE-03, autenticação e sessão corrigidas no Spring Boot.
+
+### **FE-08 — Implementar controle de acesso visual**
+
+**Parte da aplicação:** rotas, menus e páginas de Paciente, Atendente e Administrador.
+
+| ID      | Requisito específico                                                      | Critério de aceitação                                                            |
+| ------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| FE-08.1 | Impedir a navegação de usuários não autenticados para páginas protegidas. | Usuários sem sessão não acessam telas que exigem login.                          |
+| FE-08.2 | Diferenciar a navegação dos perfis Paciente, Atendente e Administrador.      | Cada perfil visualiza somente as opções correspondentes às suas permissões.      |
+| FE-08.3 | Impedir que um paciente visualize opções administrativas.                 | Menus administrativos não aparecem para pacientes sem autorização.               |
+| FE-08.4 | Tratar acessos negados pelo backend.                                      | Uma resposta 403 apresenta mensagem apropriada, sem liberar operações restritas. |
+
+**Arquivos envolvidos:** `App.jsx`, componentes de navegação, serviço de autenticação e layouts.
+
+**Observação:** a proteção React melhora a navegação, mas não substitui as verificações de autorização do Spring Security.
+
+## **3. Formulários, modelos de dados e componentes**
+
+Backlogs FE-09, FE-10 e FE-11 | Prioridade P1
+
+### **FE-09 — Adequar formulários aos DTOs do backend**
+
+**Parte da aplicação:** formulários e conversão dos dados enviados à API.
+
+| ID      | Requisito específico                                                                                                                            | Critério de aceitação                                                                            |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| FE-09.1 | Comparar os campos do formulário de cadastro com o DTO de cadastro do backend.                                                                  | Os dados enviados utilizam os nomes e tipos esperados.                                           |
+| FE-09.2 | Adequar os formulários de usuários aos DTOs de criação, consulta e edição existentes.                                                           | Não existem campos obrigatórios ausentes ou propriedades incompatíveis nas operações integradas. |
+| FE-09.3 | Revisar o formulário de agendamento e identificar diferenças em relação ao `AgendamentoRequest`.                                                | Existe um mapeamento documentado dos campos; nenhuma API inexistente é presumida.                |
+| FE-09.4 | Padronizar a representação de datas, horários, identificadores e valores de enum.                                                               | Dados integrados seguem os formatos aceitos pelo Spring Boot.                                    |
+| FE-09.5 | Garantir que informações de autorização, como ID do paciente autenticado, não sejam tratadas como valores arbitrários definidos pelo navegador. | O backend determina ou valida a identidade e os vínculos necessários.                            |
+
+**Arquivos envolvidos:** `Cadastro.jsx`, `Agendamento.jsx`, telas de usuários, serviços e formulários.
+
+### **FE-10 — Corrigir o uso de dados simulados**
+
+**Parte da aplicação:** Home, UBS, Usuários, Níveis de Acesso e outras listagens.
+
+| ID      | Requisito específico                                                                               | Critério de aceitação                                                                              |
+| ------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| FE-10.1 | Identificar páginas que utilizam arquivos JSON locais em vez da API.                               | Cada fonte de dados está classificada como real ou simulada.                                       |
+| FE-10.2 | Integrar a consulta de UBS ao endpoint real existente.                                             | As unidades exibidas são obtidas do backend.                                                       |
+| FE-10.3 | Integrar a consulta de serviços por UBS onde a API já permitir a operação.                         | A listagem corresponde à unidade selecionada e respeita as permissões existentes.                  |
+| FE-10.4 | Integrar listagens administrativas somente quando os endpoints e permissões estiverem disponíveis. | Dados reais são exibidos corretamente; operações indisponíveis não são simuladas como persistidas. |
+
+**Arquivos envolvidos:** `Home.jsx`, componentes de UBS, listagens de usuários, `nivelAcesso`, arquivos JSON e serviços HTTP.
+
+### **FE-11 — Corrigir componentes com dependências ausentes**
+
+**Parte da aplicação:** componentes React e serviços importados.
+
+| ID      | Requisito específico                                                               | Critério de aceitação                                                            |
+| ------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| FE-11.1 | Corrigir a referência a `HealthService.buscarProximos` no componente Home.         | A página não executa chamadas a funções inexistentes.                            |
+| FE-11.2 | Revisar imports e exports de componentes e serviços utilizados.                    | Não existem erros relacionados a importações ausentes ou incorretas.             |
+| FE-11.3 | Identificar componentes que dependem de dados não disponibilizados pela aplicação. | Os componentes exibem corretamente seus dados ou um estado de indisponibilidade. |
+| FE-11.4 | Executar o build e revisar erros de execução das páginas existentes.               | As páginas incluídas na base oficial carregam sem erros inesperados no console.  |
+
+**Arquivos envolvidos:** `Home.jsx`, `healthService.js`, componentes e serviços relacionados.
+
+## **4. Experiência do usuário, validação e organização visual**
+
+Backlogs FE-12, FE-13 e FE-14 | Prioridades P1 e P2
+
+### **FE-12 — Padronizar feedback visual**
+
+**Parte da aplicação:** formulários, botões e páginas de consulta.
+
+| ID      | Requisito específico                                                   | Critério de aceitação                                                                         |
+| ------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| FE-12.1 | Exibir indicador de carregamento durante operações assíncronas.        | O usuário percebe quando uma requisição está em andamento.                                    |
+| FE-12.2 | Exibir mensagens de erro compreensíveis.                               | Problemas de validação, autenticação, autorização e servidor são diferenciados adequadamente. |
+| FE-12.3 | Exibir confirmação de sucesso somente após resposta válida do backend. | Mensagens não aparecem antecipadamente ou após falhas.                                        |
+| FE-12.4 | Criar estados vazios para listagens sem registros.                     | Uma resposta sem resultados não causa tela quebrada ou erro visual.                           |
+
+**Arquivos envolvidos:** Login, Cadastro, Home, listagens e componentes compartilhados.
+
+### **FE-13 — Revisar validações dos formulários**
+
+**Parte da aplicação:** Login, Cadastro e formulários administrativos existentes.
+
+| ID      | Requisito específico                                                                  | Critério de aceitação                                                            |
+| ------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| FE-13.1 | Validar preenchimento de campos obrigatórios.                                         | O formulário informa os campos faltantes antes do envio.                         |
+| FE-13.2 | Validar formatos de dados, como e-mail, CPF e datas, nos formulários que os utilizam. | Formatos claramente inválidos são identificados.                                 |
+| FE-13.3 | Apresentar mensagens de validação próximas aos campos correspondentes.                | O usuário identifica o dado que precisa corrigir.                                |
+| FE-13.4 | Evitar envios duplicados enquanto uma requisição está sendo processada.               | O formulário não dispara múltiplas requisições por cliques repetidos.            |
+| FE-13.5 | Garantir compatibilidade entre validações React e regras do backend.                  | O frontend não aceita como válido um formato diferente daquele exigido pela API. |
+
+**Arquivos envolvidos:** `Login.jsx`, `Cadastro.jsx` e formulários administrativos.
+
+### **FE-14 — Organizar componentes e responsividade**
+
+**Parte da aplicação:** estrutura visual e componentes reutilizáveis.
+
+| ID      | Requisito específico                                                                   | Critério de aceitação                                                                             |
+| ------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| FE-14.1 | Identificar estilos, elementos e componentes duplicados.                               | Reutilização aplicada onde elimina duplicações relevantes.                                        |
+| FE-14.2 | Padronizar cabeçalhos, menus, botões, campos e elementos de listagem.                  | Elementos equivalentes apresentam comportamento e aparência consistentes.                         |
+| FE-14.3 | Corrigir problemas de responsividade das páginas existentes.                           | Formulários, menus e conteúdos funcionam em telas pequenas e grandes, sem sobreposição relevante. |
+| FE-14.4 | Revisar acessibilidade básica, incluindo labels, foco, teclado e contraste.            | Elementos interativos são identificáveis e operáveis sem depender exclusivamente do mouse.        |
+| FE-14.5 | Remover estilos e componentes obsoletos somente após verificar que não são utilizados. | Não surgem regressões visuais ou funcionais por exclusões desnecessárias.                         |
+
+**Arquivos envolvidos:** arquivos CSS, `src/components/`, `src/pages/` e componentes de layout.
+
+## **5. Testes e validação da base**
+
+Backlog FE-15 | Prioridade P2, obrigatório antes de avançar
+
+### **FE-15 — Validar o frontend estabilizado**
+
+**Parte da aplicação:** aplicação completa, rotas e serviços HTTP existentes.
+
+| ID      | Requisito específico                                                 | Critério de aceitação                                                     |
+| ------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| FE-15.1 | Validar instalação de dependências, inicialização e build do React.  | Os comandos definidos no `package.json` terminam sem falhas bloqueantes.  |
+| FE-15.2 | Testar login com credenciais válidas e inválidas.                    | A aplicação apresenta os comportamentos esperados para sucesso e falha.   |
+| FE-15.3 | Testar recuperação e encerramento de sessão.                         | A sessão persiste após atualização e é encerrada corretamente no logout.  |
+| FE-15.4 | Testar navegação para páginas permitidas, protegidas e inexistentes. | A navegação apresenta resultados coerentes com autenticação e permissões. |
+| FE-15.5 | Testar formulários com entradas válidas e inválidas.                 | Validações e mensagens funcionam sem erros de execução.                   |
+| FE-15.6 | Testar respostas HTTP de sucesso, erro e ausência de conteúdo.       | Interfaces não quebram ao receber respostas previstas pela API.           |
+| FE-15.7 | Testar as páginas essenciais em celular e desktop.                   | O conteúdo permanece utilizável e legível nas duas modalidades.           |
+
+**Arquivos envolvidos:** frontend oficial completo e ambiente integrado ao Spring Boot.
+
+## **6. Ordem de execução por área da aplicação**
+
+Para evitar corrigir partes isoladas que dependem umas das outras, recomendo seguir esta sequência:
+
+1. **Estrutura e inicialização**
+
+   FE-01, FE-06, FE-11
+
+   Definir projeto oficial, corrigir navegação e eliminar referências inexistentes.
+2. **Comunicação com Spring Boot**
+
+   FE-02, FE-03
+
+   Estabelecer uma única configuração HTTP, com sessão e tratamento correto de respostas.
+3. **Login, cadastro e sessão**
+
+   FE-04, FE-05, FE-07, FE-08
+
+   Garantir autenticação real e controle de acesso coerente com o backend.
+4. **Dados e formulários**
+
+   FE-09, FE-10, FE-13
+
+   Corrigir DTOs, integrar dados disponíveis e impedir submissões inconsistentes.
+5. **Interface e qualidade**
+
+   FE-12, FE-14, FE-15
+
+   Padronizar feedback, responsividade e executar testes.
+
+## **7. Matriz de dependências com o backend**
+
+Esta tabela ajuda a identificar o que pode ser realizado exclusivamente no React e o que exige que o Spring Boot esteja estabilizado.
+
+| Backlogs                   | Dependência principal                         | Situação                                   |
+| -------------------------- | --------------------------------------------- | ------------------------------------------ |
+| FE-01, FE-06, FE-11, FE-14 | Código React                                  | Podem começar imediatamente                |
+| FE-02                      | Context path, CORS e ambiente Spring          | Exige configuração conhecida               |
+| FE-03, FE-07               | Autenticação e sessão HTTP                    | Dependem de BE-03                          |
+| FE-04                      | Contratos reais de usuários                   | Dependem de BE-08 e autenticação funcional |
+| FE-05                      | Respostas reais da API                        | Depende das operações integradas           |
+| FE-08                      | Permissões do Spring Security                 | Depende de BE-07                           |
+| FE-09                      | DTOs e validações do backend                  | Depende de BE-08 a BE-10                   |
+| FE-10                      | Controllers já disponíveis                    | Integração limitada às APIs existentes     |
+| FE-12, FE-13               | Contratos de erro e validação                 | Dependem de BE-10 e BE-11                  |
+| FE-15                      | Backend funcional para os cenários integrados | Depende das correções correspondentes      |
+
+## **8. Critério final para considerar o frontend estruturado**
+
+O frontend estará pronto para a próxima etapa quando:
+
+- Houver uma única versão oficial, com dependências e navegação funcionando.
+- Login, cadastro, logout e recuperação de sessão utilizarem a API real.
+- As operações existentes não apresentarem sucesso simulado.
+- Os formulários integrados utilizarem os DTOs corretos.
+- Os perfis tiverem navegação coerente com suas permissões.
+- As requisições e seus erros forem tratados adequadamente.
+- As telas existentes funcionarem em celular e computador.
+- Os testes básicos de frontend e integração tiverem sido executados com resultados satisfatórios.
+
+**Resultado esperado:** uma base React organizada e funcional para as operações já suportadas pelo backend, pronta para receber as próximas funcionalidades do MedScan sem depender de uma reconstrução.
+
+Depois dessa estabilização, será possível criar backlogs próprios para os módulos **Paciente, Agendamento, Atendente, Administrador e Busca Ativa**, com requisitos funcionais detalhados e critérios de aceitação, sem misturá-los às correções da estrutura atual.
+
+
+

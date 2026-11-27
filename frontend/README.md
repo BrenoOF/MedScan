@@ -1,19 +1,16 @@
-# MedScan — Frontend reformulado (React + Vite)
+﻿# MedScan — Frontend (React + Vite)
 
-Projeto reconstruído a partir das duas versões recebidas (`projeto apenas front.zip` e `tentativa.zip`) e do diagnóstico técnico datado de **10/11/2026**. Esta versão mantém a identidade visual MedScan, reúne as telas em uma aplicação coerente, padroniza a API HTTP e elimina dados falsos e operações que fingiam ter sido persistidas.
+Frontend oficial do MedScan: autenticação por sessão do Spring Boot, Fetch API com cookies e CSRF, perfis de paciente, atendente e administrador. **Não contém mocks, `localStorage` nem respostas simuladas.**
 
-> **Importante:** este pacote inclui **somente o frontend**. Não modifica nem substitui o backend Spring Boot. A auditoria constatou que o backend atual tem erros de compilação e APIs essenciais ainda indisponíveis. Portanto, **não é correto afirmar que todo o sistema está funcional de ponta a ponta**.
+O projeto é independente do backend: para executá-lo é necessário ter o Spring Boot ativo em `http://localhost:8080` com o context path `/MedScan`.
 
 ## 1. Requisitos
 
-- Node.js **20.19+ ou 22.12+** (requisito da versão do Vite instalada pelo projeto).
-- npm.
-- Backend Spring Boot em `http://localhost:8080` com contexto `/MedScan`.
-- MariaDB e configurações de acesso disponibilizadas pelo backend.
+- Node.js 20.19+ ou 22.12+
+- npm
+- Backend Spring Boot com `/MedScan` e um banco de dados configurado
 
-## 2. Como executar
-
-Abra um terminal dentro desta pasta:
+## 2. Executar
 
 ```bash
 npm ci
@@ -22,81 +19,100 @@ npm run dev
 
 Acesse **http://localhost:5173**.
 
-Para gerar a versão de produção:
+Outros comandos:
 
 ```bash
-npm run build
-npm run preview
+npm run build     # gera dist/
+npm run preview   # serve a versão de produção
+npm test          # testes dos utilitários
 ```
 
-Para testar os utilitários do projeto:
+O proxy do Vite encaminha `/MedScan` para `http://localhost:8080`. Se o backend estiver em outro endereço, defina `MEDSCAN_BACKEND_URL` antes de iniciar o Vite:
 
 ```bash
-npm test
+MEDSCAN_BACKEND_URL=http://localhost:8080 npm run dev
 ```
-
-O proxy do `vite.config.js` encaminha **`/MedScan` → `http://localhost:8080/MedScan`**. O `VITE_API_BASE` usa `/MedScan` por padrão. Todas as requisições enviam cookies com `credentials: "include"`. Se o backend utilizar outra porta, defina `MEDSCAN_BACKEND_URL` no ambiente antes de iniciar o Vite.
 
 ### Variáveis de ambiente
 
-Copie `.env.example` para `.env` **apenas quando necessário**. **Não configure URLs de agendamento que não existem** — elas foram deixadas comentadas e são propostas para integração futura, não rotas confirmadas.
+O arquivo `.env` **não é necessário**: a base `/MedScan` é o padrão e os caminhos confirmados estão no código. Use `.env.example` apenas se precisar sobrescrever a base ou habilitar uma funcionalidade cuja rota ainda não existe no backend. Nunca coloque senhas ou segredos no frontend.
 
-Para ambientes de produção, configure reverse proxy para o mesmo host ou forneça a base apropriada (`VITE_API_BASE`). **Nunca coloque senhas do banco nem segredos no `.env` do frontend**.
+### Contas de teste locais
+
+Usadas apenas no banco de desenvolvimento:
+
+| Perfil | E-mail | Senha |
+|---|---|---|
+| Administrador | `admin@medscan.test` | `Teste@123456` |
+| Atendente | `atendente@medscan.test` | `Teste@123456` |
+| Paciente | `paciente@medscan.test` | `Teste@123456` |
 
 ## 3. Estrutura
 
-```
+```text
+public/                 imagens (a.png é a logo oficial) e assets estáticos
 src/
-├── api/                   # fetch, erros HTTP, usuários, unidades, pacientes e agendamentos
-├── components/            # Layout, proteção de rotas, avisos, carregamento
-├── context/               # Sessão HTTP e perfis
-├── pages/                 # Públicas, paciente, atendente e supervisor
-├── utils/                 # Normalização de retornos e rótulos
-├── App.jsx                # Rotas únicas + redirecionamentos de rotas antigas
-├── main.jsx               # Entrada da aplicação
-└── styles.css             # Identidade visual e layouts responsivos
+  api/                  http.js (fetch, cookies, CSRF, erros) + módulos por domínio
+  components/           Layout, guards, feedback e ErrorBoundary
+  context/              AuthContext (sessão e perfil vindos do backend)
+  pages/                páginas públicas, paciente, atendente e administrador
+  utils/                normalização de respostas e rótulos
+  App.jsx               rotas oficiais e redirecionamentos legados
+  main.jsx              ponto de entrada
+  styles.css            identidade visual e responsividade
+tests/                  testes dos utilitários
+docs/                   auditorias e decisões por requisito do backlog
 ```
 
-## 4. Funcionalidades disponíveis e limitações
+## 4. Integração com o backend
 
-| Área | Situação no frontend | Integração real |
+| Fluxo | Método | Endpoint |
 |---|---|---|
-| Home pública e Sobre | Implementadas | Não depende do banco |
-| Login | Formulário e autenticação via cookie | `POST /usuario/usuarioLogin` — depende da correção da compilação e sessão no backend |
-| Cadastro de usuário | Formulário validado, sem sucesso simulado | `POST /usuario/usuarioCadastro` |
-| Logout e restauração de sessão | Implementados | `POST /usuario/usuarioLogout` e `GET /usuario/usuarioSession` |
-| Proteção de rotas | Implementada para os três perfis | Backend precisa reforçar autorização real |
-| UBS | Lista e busca visual, com atualizações | `POST /unidadeSaude/unidadeSaudeList` |
-| Serviços por UBS | Consulta ao selecionar uma UBS | `POST /tipoServico/listarPorUnidade` |
-| Solicitação de agendamento | Interface em duas etapas, validações e revisão | **Bloqueada até existir AgendamentoController** |
-| Meus agendamentos e cancelamento | Interface pronta para dados reais | **Endpoints não disponíveis** |
-| Perfil do paciente | Consulta e formulário preparado | `GET /paciente/pacientePerfil`; cadastro completo **aguarda API de endereço/titularidade** |
-| Painel do atendente | Painel, filtro e tabela preparados | **Endpoint da própria UBS indisponível** |
-| Supervisor — usuários | Consulta com filtro e criação administrativa | `POST /usuario/usuarioList` e `/usuario/usuarioNew` |
-| Supervisor — níveis | Consulta sem mocks | `POST /nivelAcesso/nivelAcessoList` (formato exato ainda deve ser confirmado) |
-| Supervisor — UBS | Consulta real | Criação e edição indisponíveis |
-| Edição e exclusão administrativa | **Não simuladas** | Edição sem controller; exclusões aguardam correção das cascatas |
-| Chat, doenças e notificações | Não incluídos no escopo mínimo | Não havia backend comprovado para os fluxos principais |
+| Login | POST | `/usuario/usuarioLogin` |
+| Cadastro do paciente | POST | `/paciente/pacienteCadastroCompleto` |
+| Sessão | GET | `/usuario/usuarioSession` |
+| Logout | POST | `/usuario/usuarioLogout` |
+| Usuários | POST | `/usuario/usuarioList`, `/usuario/usuarioNew`, `/usuario/usuarioDelete` |
+| Níveis de acesso | POST | `/nivelAcesso/nivelAcessoList` |
+| UBS e serviços | POST | `/unidadeSaude/unidadeSaudeList`, `/tipoServico/listarPorUnidade` |
+| Perfil do paciente | GET | `/paciente/pacientePerfil` |
+| Agendamento do paciente | POST/GET | `/agendamento/agendamentoNew`, `/agendamento/agendamentoPacienteList` |
+| Painel do atendente | POST | `/agendamento/porUnidade`, `/agendamento/alterarStatus` |
+| CSRF | GET | `/csrf` |
 
-## 5. Segurança e integridade
+O cliente envia `credentials: "include"`, lê o token em `/csrf` quando o cookie não é acessível via `document.cookie` e reenvia `X-XSRF-TOKEN`. A identidade de paciente, atendente e UBS vem sempre da sessão do servidor.
 
-- **Não existe login falso**, lista de dados fictícios nem sucesso de agendamento offline.
-- A sessão não é gravada em `localStorage`; a fonte da autenticação é o servidor.
-- **Não** envie `pacienteId`, `atendenteId`, `usuarioId` ou `status` diretamente do formulário como prova de titularidade. O backend deve obter essas informações da sessão e aplicar as regras de negócio.
-- A navegação é limitada por perfil, mas **a segurança efetiva deve ser garantida no Spring Security**.
-- O cliente lê o cookie `XSRF-TOKEN`, caso exista, e envia `X-XSRF-TOKEN`. O backend ainda precisa fornecer e validar o token ao habilitar CSRF; essa mudança exige teste de integração.
-- Para TCC, use dados fictícios durante a demonstração.
+O status exposto pela API usa o vocabulário do frontend: `PENDENTE`, `CONFIRMADO` e `CANCELADO`.
 
-## 6. Contratos ainda necessários
+### Limitações conhecidas
 
-Consulte **`INTEGRACAO_BACKEND.md`**, que diferencia os endpoints verificados dos endpoints sugeridos e documenta exemplos de requests/responses para a próxima etapa.
+- Cancelamento de agendamento pelo paciente depende de endpoint ainda não exposto.
+- Edição de usuários e cadastro/edição de UBS dependem de endpoints ainda não expostos.
+- A listagem de níveis exige permissão administrativa no backend.
 
-## 7. Verificação da entrega
+## 5. Layout
 
-- Os **4 testes automatizados dos utilitários** foram executados com sucesso.
-- Todos os arquivos JS e JSX foram analisados por um parser JavaScript/JSX sem erros de sintaxe.
-- **Build Vite não verificado neste ambiente**: a instalação npm excedeu o tempo disponível por falta de acesso aos pacotes. Execute `npm ci && npm run build` na máquina de desenvolvimento para validar a compilação final. Não foi realizado teste no navegador com o backend.
+O menu lateral é exibido por padrão em desktop. O botão de menu na barra superior recolhe e reabre a sidebar em desktop; em telas até 980 px ele abre e fecha o menu sobreposto.
 
-## 8. Observações sobre a auditoria
+## 6. Verificação
 
-A F1 foi preservada como **referência visual e de identidade**; a F2 serviu como referência inicial do uso de `fetch`. Os dois ZIPs originais permanecem inalterados. A nova versão é um projeto autônomo e deve ser trabalhada como **único frontend oficial** após revisão da equipe.
+Executados neste projeto:
+
+- `npm ci` / dependências resolvidas
+- `npm run build` — aprovado
+- `npm test` — 4 testes aprovados
+- Fluxos HTTP contra o backend local e MariaDB de teste — 27 verificações aprovadas
+- Testes automatizados do backend — 26 aprovados com datasource configurado
+
+Não há script `lint` configurado.
+
+## 7. Documentação
+
+- `INTEGRACAO_BACKEND.md` — contratos confirmados endpoints a implementar
+- `RELATORIO_INTEGRACAO.md`, `FLUXO_USUARIO.md`, `MELHORIAS_REALIZADAS.md`
+- `docs/productBacklog.txt` — backlog completo
+- `docs/DECISAO-FE-01.1.md` a `docs/URLS-CENTRALIZADAS-FE-02.3.md` — decisões e evidências por requisito
+
+## 8. Observações para publicação
+
+A pasta contém apenas o frontend. `node_modules`, `dist` e `.env` são ignorados pelo Git. Nenhuma credencial de banco ou segredo está incluído.

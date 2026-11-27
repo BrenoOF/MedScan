@@ -13,8 +13,8 @@ test('mantém CNES como string, inclusive zeros à esquerda',()=>{
  assert.equal(serviceId({id:31}),'31');
  assert.equal(serviceName({descricao:'Clínica geral'}),'Clínica geral');
 });
-test('reconhece perfis sem conceder supervisor por padrão',()=>{
- assert.equal(parseRole({nivelAcesso:{descricao:'Supervisor'}}),'supervisor');
+test('reconhece perfis sem conceder administrador por padrão',()=>{
+  assert.equal(parseRole({nivelAcesso:{descricao:'Administrador'}}),'administrador');
  assert.equal(parseRole({perfil:'Atendente'}),'atendente');
  assert.equal(parseRole({perfil:'Paciente'}),'paciente');
  assert.equal(parseRole({perfil:'Não identificado'}),'paciente');
